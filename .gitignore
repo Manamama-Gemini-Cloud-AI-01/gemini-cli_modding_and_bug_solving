@@ -44,3 +44,7 @@ packages/vscode-ide-companion/*.vsix
 gha-creds-*.json
 puzzles/
 mcp-wolfram-alpha.log
+
+# Vespera directories
+.vespera_scriptorium/
+.vespera_v2/
