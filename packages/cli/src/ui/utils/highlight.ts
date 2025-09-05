@@ -9,11 +9,10 @@ export type HighlightToken = {
   type: 'default' | 'command' | 'file';
 };
 
-const HIGHLIGHT_REGEX = /(^\/[a-zA-Z0-9_-]+|@(?:\\ |[a-zA-Z0-9_./-])+)/g;
+const HIGHLIGHT_REGEX = /(\/[a-zA-Z0-9_-]+|@[a-zA-Z0-9_./-]+)/g;
 
 export function parseInputForHighlighting(
   text: string,
-  index: number,
 ): readonly HighlightToken[] {
   if (!text) {
     return [{ text: '', type: 'default' }];
@@ -37,18 +36,10 @@ export function parseInputForHighlighting(
 
     // Add the matched token
     const type = fullMatch.startsWith('/') ? 'command' : 'file';
-    // Only highlight slash commands if the index is 0.
-    if (type === 'command' && index !== 0) {
-      tokens.push({
-        text: fullMatch,
-        type: 'default',
-      });
-    } else {
-      tokens.push({
-        text: fullMatch,
-        type,
-      });
-    }
+    tokens.push({
+      text: fullMatch,
+      type,
+    });
 
     lastIndex = matchIndex + fullMatch.length;
   }

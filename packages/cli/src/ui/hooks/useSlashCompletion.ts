@@ -267,7 +267,6 @@ function useCommandSuggestions(
             label: cmd.name,
             value: cmd.name,
             description: cmd.description,
-            commandKind: cmd.kind,
           }));
 
           setSuggestions(finalSuggestions);
@@ -444,7 +443,6 @@ export function useSlashCompletion(props: UseSlashCompletionProps): {
       commands.filter(
         (cmd) =>
           cmd.description &&
-          !cmd.hidden &&
           (cmd.name.toLowerCase().startsWith(partial.toLowerCase()) ||
             cmd.altNames?.some((alt) =>
               alt.toLowerCase().startsWith(partial.toLowerCase()),

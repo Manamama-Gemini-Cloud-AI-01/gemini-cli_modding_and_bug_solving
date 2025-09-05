@@ -76,7 +76,7 @@ const MIGRATION_MAP: Record<string, string> = {
   excludeTools: 'tools.exclude',
   excludeMCPServers: 'mcp.excluded',
   excludedProjectEnvVars: 'advanced.excludedEnvVars',
-  extensionManagement: 'experimental.extensionManagement',
+  extensionManagement: 'advanced.extensionManagement',
   extensions: 'extensions',
   fileFiltering: 'context.fileFiltering',
   folderTrustFeature: 'security.folderTrust.featureEnabled',
@@ -329,6 +329,18 @@ function mergeSettings(
 ): Settings {
   const safeWorkspace = isTrusted ? workspace : ({} as Settings);
 
+  // folderTrust is not supported at workspace level.
+  const { security, ...restOfWorkspace } = safeWorkspace;
+  const safeWorkspaceWithoutFolderTrust = security
+    ? {
+        ...restOfWorkspace,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        security: (({ folderTrust, ...rest }) => rest)(security),
+      }
+    : {
+        ...restOfWorkspace,
+      };
+
   // Settings are merged with the following precedence (last one wins for
   // single values):
   // 1. System Defaults
@@ -340,7 +352,7 @@ function mergeSettings(
     {}, // Start with an empty object
     systemDefaults,
     user,
-    safeWorkspace,
+    safeWorkspaceWithoutFolderTrust,
     system,
   ) as Settings;
 }
