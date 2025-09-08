@@ -115,10 +115,7 @@ export function KeypressProvider({
       }
     };
 
-    const wasRaw = stdin.isRaw;
-    if (wasRaw === false) {
-      setRawMode(true);
-    }
+    setRawMode(true);
 
     const keypressStream = new PassThrough();
     let usePassthrough = false;
@@ -680,9 +677,7 @@ export function KeypressProvider({
       rl.close();
 
       // Restore the terminal to its original state.
-      if (wasRaw === false) {
-        setRawMode(false);
-      }
+      setRawMode(false);
 
       if (backslashTimeout) {
         clearTimeout(backslashTimeout);

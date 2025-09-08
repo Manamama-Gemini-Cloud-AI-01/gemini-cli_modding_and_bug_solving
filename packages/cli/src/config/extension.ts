@@ -119,8 +119,7 @@ export function loadExtensions(
 
   if (
     (isWorkspaceTrusted(settings) ?? true) &&
-    // Default management setting to true
-    !(settings.experimental?.extensionManagement ?? true)
+    !settings.experimental?.extensionManagement
   ) {
     allExtensions.push(...getWorkspaceExtensions(workspaceDir));
   }

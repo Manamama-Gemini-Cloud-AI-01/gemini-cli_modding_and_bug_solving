@@ -14,7 +14,6 @@ import {
   type MockInstance,
 } from 'vitest';
 import {
-  main,
   setupUnhandledRejectionHandler,
   validateDnsResolutionOrder,
   startInteractiveUI,

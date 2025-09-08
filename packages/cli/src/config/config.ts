@@ -305,7 +305,7 @@ export async function parseArguments(settings: Settings): Promise<CliArgs> {
     // Register MCP subcommands
     .command(mcpCommand);
 
-  if (settings?.experimental?.extensionManagement ?? true) {
+  if (settings?.experimental?.extensionManagement ?? false) {
     yargsInstance.command(extensionsCommand);
   }
 
@@ -622,8 +622,6 @@ export async function loadCliConfig(
     shouldUseNodePtyShell: settings.tools?.usePty,
     skipNextSpeakerCheck: settings.model?.skipNextSpeakerCheck,
     enablePromptCompletion: settings.general?.enablePromptCompletion ?? false,
-    truncateToolOutputThreshold: settings.tools?.truncateToolOutputThreshold,
-    truncateToolOutputLines: settings.tools?.truncateToolOutputLines,
     eventEmitter: appEvents,
     useSmartEdit: argv.useSmartEdit ?? settings.useSmartEdit,
   });

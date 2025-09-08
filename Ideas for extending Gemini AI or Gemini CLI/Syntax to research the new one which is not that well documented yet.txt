@@ -1,0 +1,13 @@
+      --experimental-acp          Starts the agent in ACP mode
+                                                     [boolean]
+
+
+Ref, Grok AI, partly wrong:
+
+The `--experimental-acp` flag in Gemini CLI’s `--help` output indicates an option to start the agent in “ACP mode,” described as a boolean flag. 
+
+### Analysis of `--experimental-acp`
+- **From `--help` Output**: The flag `--experimental-acp` is listed as a boolean option that “starts the agent in ACP mode.” The term “ACP” is undefined in the help text and the GitHub document (`google-gemini/gemini-cli`). The “experimental” prefix suggests it’s a preview feature, potentially unstable or not fully documented, aligning with Gemini CLI’s “Pre-GA” status (available “as is” with limited support, per web results).[](https://cloud.google.com/gemini/docs/codeassist/gemini-cli)
+
+
+

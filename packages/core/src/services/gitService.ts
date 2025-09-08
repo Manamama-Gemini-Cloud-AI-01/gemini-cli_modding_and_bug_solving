@@ -93,6 +93,12 @@ export class GitService {
     }
 
     await fs.writeFile(shadowGitIgnorePath, userGitIgnoreContent);
+
+    // Ignore the project's git directory to prevent it from being included in the snapshot.
+    await fs.appendFile(
+      shadowGitIgnorePath,
+      '\n# Ignore the project git directory\n.git\n',
+    );
   }
 
   private get shadowGitRepository(): SimpleGit {

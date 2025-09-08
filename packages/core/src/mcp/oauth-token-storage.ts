@@ -8,16 +8,12 @@ import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
 import { Storage } from '../config/storage.js';
 import { getErrorMessage } from '../utils/errors.js';
-import type {
-  OAuthToken,
-  OAuthCredentials,
-  TokenStorage,
-} from './token-storage/types.js';
+import type { OAuthToken, OAuthCredentials } from './token-storage/types.js';
 
 /**
  * Class for managing MCP OAuth token storage and retrieval.
  */
-export class MCPOAuthTokenStorage implements TokenStorage {
+export class MCPOAuthTokenStorage {
   /**
    * Get the path to the token storage file.
    *
@@ -40,7 +36,7 @@ export class MCPOAuthTokenStorage implements TokenStorage {
    *
    * @returns A map of server names to credentials
    */
-  async getAllCredentials(): Promise<Map<string, OAuthCredentials>> {
+  async loadTokens(): Promise<Map<string, OAuthCredentials>> {
     const tokenMap = new Map<string, OAuthCredentials>();
 
     try {
@@ -63,14 +59,36 @@ export class MCPOAuthTokenStorage implements TokenStorage {
     return tokenMap;
   }
 
-  async listServers(): Promise<string[]> {
-    const tokens = await this.getAllCredentials();
-    return Array.from(tokens.keys());
-  }
+  /**
+   * Save a token for a specific MCP server.
+   *
+   * @param serverName The name of the MCP server
+   * @param token The OAuth token to save
+   * @param clientId Optional client ID used for this token
+   * @param tokenUrl Optional token URL used for this token
+   * @param mcpServerUrl Optional MCP server URL
+   */
+  async saveToken(
+    serverName: string,
+    token: OAuthToken,
+    clientId?: string,
+    tokenUrl?: string,
+    mcpServerUrl?: string,
+  ): Promise<void> {
+    await this.ensureConfigDir();
 
-  async setCredentials(credentials: OAuthCredentials): Promise<void> {
-    const tokens = await this.getAllCredentials();
-    tokens.set(credentials.serverName, credentials);
+    const tokens = await this.loadTokens();
+
+    const credential: OAuthCredentials = {
+      serverName,
+      token,
+      clientId,
+      tokenUrl,
+      mcpServerUrl,
+      updatedAt: Date.now(),
+    };
+
+    tokens.set(serverName, credential);
 
     const tokenArray = Array.from(tokens.values());
     const tokenFile = this.getTokenFilePath();
@@ -90,43 +108,13 @@ export class MCPOAuthTokenStorage implements TokenStorage {
   }
 
   /**
-   * Save a token for a specific MCP server.
-   *
-   * @param serverName The name of the MCP server
-   * @param token The OAuth token to save
-   * @param clientId Optional client ID used for this token
-   * @param tokenUrl Optional token URL used for this token
-   * @param mcpServerUrl Optional MCP server URL
-   */
-  async saveToken(
-    serverName: string,
-    token: OAuthToken,
-    clientId?: string,
-    tokenUrl?: string,
-    mcpServerUrl?: string,
-  ): Promise<void> {
-    await this.ensureConfigDir();
-
-    const credential: OAuthCredentials = {
-      serverName,
-      token,
-      clientId,
-      tokenUrl,
-      mcpServerUrl,
-      updatedAt: Date.now(),
-    };
-
-    await this.setCredentials(credential);
-  }
-
-  /**
    * Get a token for a specific MCP server.
    *
    * @param serverName The name of the MCP server
    * @returns The stored credentials or null if not found
    */
-  async getCredentials(serverName: string): Promise<OAuthCredentials | null> {
-    const tokens = await this.getAllCredentials();
+  async getToken(serverName: string): Promise<OAuthCredentials | null> {
+    const tokens = await this.loadTokens();
     return tokens.get(serverName) || null;
   }
 
@@ -135,8 +123,8 @@ export class MCPOAuthTokenStorage implements TokenStorage {
    *
    * @param serverName The name of the MCP server
    */
-  async deleteCredentials(serverName: string): Promise<void> {
-    const tokens = await this.getAllCredentials();
+  async removeToken(serverName: string): Promise<void> {
+    const tokens = await this.loadTokens();
 
     if (tokens.delete(serverName)) {
       const tokenArray = Array.from(tokens.values());
@@ -178,7 +166,7 @@ export class MCPOAuthTokenStorage implements TokenStorage {
   /**
    * Clear all stored MCP OAuth tokens.
    */
-  async clearAll(): Promise<void> {
+  async clearAllTokens(): Promise<void> {
     try {
       const tokenFile = this.getTokenFilePath();
       await fs.unlink(tokenFile);

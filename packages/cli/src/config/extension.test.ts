@@ -63,36 +63,59 @@ vi.mock('child_process', async (importOriginal) => {
 const EXTENSIONS_DIRECTORY_NAME = path.join(GEMINI_DIR, 'extensions');
 
 describe('loadExtensions', () => {
+  let tempWorkspaceDir: string;
   let tempHomeDir: string;
-  let userExtensionsDir: string;
+  let workspaceExtensionsDir: string;
 
   beforeEach(() => {
+    tempWorkspaceDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'gemini-cli-test-workspace-'),
+    );
     tempHomeDir = fs.mkdtempSync(
       path.join(os.tmpdir(), 'gemini-cli-test-home-'),
     );
     vi.mocked(os.homedir).mockReturnValue(tempHomeDir);
     vi.mocked(isWorkspaceTrusted).mockReturnValue(true);
 
-    userExtensionsDir = path.join(tempHomeDir, EXTENSIONS_DIRECTORY_NAME);
-    fs.mkdirSync(userExtensionsDir, { recursive: true });
+    workspaceExtensionsDir = path.join(
+      tempWorkspaceDir,
+      EXTENSIONS_DIRECTORY_NAME,
+    );
+    fs.mkdirSync(workspaceExtensionsDir, { recursive: true });
   });
 
   afterEach(() => {
+    fs.rmSync(tempWorkspaceDir, { recursive: true, force: true });
     fs.rmSync(tempHomeDir, { recursive: true, force: true });
     vi.restoreAllMocks();
   });
 
+  it('ignores extensions in untrusted workspaces', () => {
+    vi.mocked(isWorkspaceTrusted).mockReturnValue(false);
+
+    const extensionDir = path.join(workspaceExtensionsDir, 'test-extension');
+    fs.mkdirSync(extensionDir, { recursive: true });
+    createExtension({
+      extensionsDir: workspaceExtensionsDir,
+      name: 'ext1',
+      version: '1.0.0',
+      addContextFile: true,
+    });
+    const extensions = loadExtensions(tempWorkspaceDir);
+    expect(extensions.length).toBe(0);
+  });
+
   it('should include extension path in loaded extension', () => {
-    const extensionDir = path.join(userExtensionsDir, 'test-extension');
+    const extensionDir = path.join(workspaceExtensionsDir, 'test-extension');
     fs.mkdirSync(extensionDir, { recursive: true });
 
     createExtension({
-      extensionsDir: userExtensionsDir,
+      extensionsDir: workspaceExtensionsDir,
       name: 'test-extension',
       version: '1.0.0',
     });
 
-    const extensions = loadExtensions();
+    const extensions = loadExtensions(tempWorkspaceDir);
     expect(extensions).toHaveLength(1);
     expect(extensions[0].path).toBe(extensionDir);
     expect(extensions[0].config.name).toBe('test-extension');
@@ -100,70 +123,70 @@ describe('loadExtensions', () => {
 
   it('should load context file path when GEMINI.md is present', () => {
     createExtension({
-      extensionsDir: userExtensionsDir,
+      extensionsDir: workspaceExtensionsDir,
       name: 'ext1',
       version: '1.0.0',
       addContextFile: true,
     });
     createExtension({
-      extensionsDir: userExtensionsDir,
+      extensionsDir: workspaceExtensionsDir,
       name: 'ext2',
       version: '2.0.0',
     });
 
-    const extensions = loadExtensions();
+    const extensions = loadExtensions(tempWorkspaceDir);
 
     expect(extensions).toHaveLength(2);
     const ext1 = extensions.find((e) => e.config.name === 'ext1');
     const ext2 = extensions.find((e) => e.config.name === 'ext2');
     expect(ext1?.contextFiles).toEqual([
-      path.join(userExtensionsDir, 'ext1', 'GEMINI.md'),
+      path.join(workspaceExtensionsDir, 'ext1', 'GEMINI.md'),
     ]);
     expect(ext2?.contextFiles).toEqual([]);
   });
 
   it('should load context file path from the extension config', () => {
     createExtension({
-      extensionsDir: userExtensionsDir,
+      extensionsDir: workspaceExtensionsDir,
       name: 'ext1',
       version: '1.0.0',
       addContextFile: false,
       contextFileName: 'my-context-file.md',
     });
 
-    const extensions = loadExtensions();
+    const extensions = loadExtensions(tempWorkspaceDir);
 
     expect(extensions).toHaveLength(1);
     const ext1 = extensions.find((e) => e.config.name === 'ext1');
     expect(ext1?.contextFiles).toEqual([
-      path.join(userExtensionsDir, 'ext1', 'my-context-file.md'),
+      path.join(workspaceExtensionsDir, 'ext1', 'my-context-file.md'),
     ]);
   });
 
   it('should filter out disabled extensions', () => {
     createExtension({
-      extensionsDir: userExtensionsDir,
+      extensionsDir: workspaceExtensionsDir,
       name: 'ext1',
       version: '1.0.0',
     });
     createExtension({
-      extensionsDir: userExtensionsDir,
+      extensionsDir: workspaceExtensionsDir,
       name: 'ext2',
       version: '2.0.0',
     });
 
-    const settingsDir = path.join(tempHomeDir, GEMINI_DIR);
+    const settingsDir = path.join(tempWorkspaceDir, GEMINI_DIR);
     fs.mkdirSync(settingsDir, { recursive: true });
     fs.writeFileSync(
       path.join(settingsDir, 'settings.json'),
       JSON.stringify({ extensions: { disabled: ['ext1'] } }),
     );
 
-    const extensions = loadExtensions();
+    const extensions = loadExtensions(tempWorkspaceDir);
     const activeExtensions = annotateActiveExtensions(
       extensions,
       [],
-      tempHomeDir,
+      tempWorkspaceDir,
     ).filter((e) => e.isActive);
     expect(activeExtensions).toHaveLength(1);
     expect(activeExtensions[0].name).toBe('ext2');
@@ -171,7 +194,7 @@ describe('loadExtensions', () => {
 
   it('should hydrate variables', () => {
     createExtension({
-      extensionsDir: userExtensionsDir,
+      extensionsDir: workspaceExtensionsDir,
       name: 'test-extension',
       version: '1.0.0',
       addContextFile: false,
@@ -183,11 +206,11 @@ describe('loadExtensions', () => {
       },
     });
 
-    const extensions = loadExtensions();
+    const extensions = loadExtensions(tempWorkspaceDir);
     expect(extensions).toHaveLength(1);
     const loadedConfig = extensions[0].config;
     const expectedCwd = path.join(
-      userExtensionsDir,
+      workspaceExtensionsDir,
       'test-extension',
       'server',
     );
@@ -195,9 +218,6 @@ describe('loadExtensions', () => {
   });
 
   it('should load a linked extension correctly', async () => {
-    const tempWorkspaceDir = fs.mkdtempSync(
-      path.join(os.tmpdir(), 'gemini-cli-test-workspace-'),
-    );
     const sourceExtDir = createExtension({
       extensionsDir: tempWorkspaceDir,
       name: 'my-linked-extension',
@@ -211,7 +231,7 @@ describe('loadExtensions', () => {
       type: 'link',
     });
     expect(extensionName).toEqual('my-linked-extension');
-    const extensions = loadExtensions();
+    const extensions = loadExtensions(tempHomeDir);
     expect(extensions).toHaveLength(1);
 
     const linkedExt = extensions[0];
@@ -232,13 +252,13 @@ describe('loadExtensions', () => {
     process.env.TEST_DB_URL = 'postgresql://localhost:5432/testdb';
 
     try {
-      const userExtensionsDir = path.join(
-        tempHomeDir,
+      const workspaceExtensionsDir = path.join(
+        tempWorkspaceDir,
         EXTENSIONS_DIRECTORY_NAME,
       );
-      fs.mkdirSync(userExtensionsDir, { recursive: true });
+      fs.mkdirSync(workspaceExtensionsDir, { recursive: true });
 
-      const extDir = path.join(userExtensionsDir, 'test-extension');
+      const extDir = path.join(workspaceExtensionsDir, 'test-extension');
       fs.mkdirSync(extDir);
 
       // Write config to a separate file for clarity and good practices
@@ -260,7 +280,7 @@ describe('loadExtensions', () => {
       };
       fs.writeFileSync(configPath, JSON.stringify(extensionConfig));
 
-      const extensions = loadExtensions();
+      const extensions = loadExtensions(tempWorkspaceDir);
 
       expect(extensions).toHaveLength(1);
       const extension = extensions[0];
@@ -282,10 +302,13 @@ describe('loadExtensions', () => {
   });
 
   it('should handle missing environment variables gracefully', () => {
-    const userExtensionsDir = path.join(tempHomeDir, EXTENSIONS_DIRECTORY_NAME);
-    fs.mkdirSync(userExtensionsDir, { recursive: true });
+    const workspaceExtensionsDir = path.join(
+      tempWorkspaceDir,
+      EXTENSIONS_DIRECTORY_NAME,
+    );
+    fs.mkdirSync(workspaceExtensionsDir, { recursive: true });
 
-    const extDir = path.join(userExtensionsDir, 'test-extension');
+    const extDir = path.join(workspaceExtensionsDir, 'test-extension');
     fs.mkdirSync(extDir);
 
     const extensionConfig = {
@@ -308,7 +331,7 @@ describe('loadExtensions', () => {
       JSON.stringify(extensionConfig),
     );
 
-    const extensions = loadExtensions();
+    const extensions = loadExtensions(tempWorkspaceDir);
 
     expect(extensions).toHaveLength(1);
     const extension = extensions[0];
@@ -569,7 +592,7 @@ describe('uninstallExtension', () => {
     await uninstallExtension('my-local-extension');
 
     expect(fs.existsSync(sourceExtDir)).toBe(false);
-    expect(loadExtensions()).toHaveLength(1);
+    expect(loadExtensions(tempHomeDir)).toHaveLength(1);
     expect(fs.existsSync(otherExtDir)).toBe(true);
   });
 
@@ -652,7 +675,7 @@ describe('performWorkspaceExtensionMigration', () => {
       });
 
       await performWorkspaceExtensionMigration([loadExtension(ext1Path)!]);
-      const extensions = loadExtensions();
+      const extensions = loadExtensions(tempWorkspaceDir);
 
       expect(extensions).toEqual([]);
     });
@@ -680,7 +703,7 @@ describe('performWorkspaceExtensionMigration', () => {
 
     const userExtensionsDir = path.join(tempHomeDir, GEMINI_DIR, 'extensions');
     const userExt1Path = path.join(userExtensionsDir, 'ext1');
-    const extensions = loadExtensions();
+    const extensions = loadExtensions(tempWorkspaceDir);
 
     expect(extensions).toHaveLength(2);
     const metadataPath = path.join(userExt1Path, INSTALL_METADATA_FILENAME);
@@ -889,7 +912,7 @@ describe('enableExtension', () => {
   });
 
   const getActiveExtensions = (): GeminiCLIExtension[] => {
-    const extensions = loadExtensions();
+    const extensions = loadExtensions(tempWorkspaceDir);
     const activeExtensions = annotateActiveExtensions(
       extensions,
       [],

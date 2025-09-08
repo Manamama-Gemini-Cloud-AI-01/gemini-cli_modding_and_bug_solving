@@ -1,0 +1,76 @@
+Problem, the settings file /data/data/com.termux/files/home/.gemini/settings.json is messy. It is full of experiments. That is why the list below appears. The task is to make it more elegant by using the disabled flags itself for now to clear it up so that fewer are shown as problematic.
+
+
+Ref:
+/data/data/com.termux/files/home/.gemini/settings.json
+can:
+
+  
+  "excludeTools": [
+    "ShellTool(rm -rf)"
+  ],
+  "allowMCPServers": [
+    "myPythonServer"
+  ],
+  "excludeMCPServers": [
+    "deepwiki"
+  ],
+
+See the Readmes here about these. 
+
+~/.../GitHub/gemini-cli $ gemini
+MCP ERROR (linkedin-mcp): Error: spawn linkedin-mcp_bad ENOENT
+Error during discovery for server 'linkedin-mcp': spawn linkedin-mcp_bad ENOENT
+MCP ERROR (empty): Error: spawn empty ENOENT
+Error during discovery for server 'empty': spawn empty ENOENT
+MCP ERROR (gemini_AI_bis-mcp): Error: spawn none ENOENT
+Error during discovery for server 'gemini_AI_bis-mcp': spawn none ENOENT
+MCP ERROR (browsermcp_online_bad): Error: spawn npx_bad ENOENT
+Error during discovery for server 'browsermcp_online_bad': spawn npx_bad ENOENT
+MCP ERROR (browsermcp_to_test_local_bad): Error: spawn mcp-server-browsermcp_bad ENOENT
+Error during discovery for server 'browsermcp_to_test_local_bad': spawn mcp-server-browsermcp_bad ENOENT
+MCP ERROR (sequential-thinking-experiment): Error: spawn mcp-server-sequential-thinking ENOENT
+Error during discovery for server 'sequential-thinking-experiment': spawn mcp-server-sequential-thinking ENOENT
+MCP ERROR (mcp-server-memory): Error: spawn mcp-server-memory ENOENT
+Error during discovery for server 'mcp-server-memory': spawn mcp-server-memory ENOENT
+MCP ERROR (puppeteer_online): Error: spawn npx_slow ENOENT
+Error during discovery for server 'puppeteer_online': spawn npx_slow ENOENT
+MCP ERROR (mcp-server-filesystem): Error: spawn mcp-server-filesystem ENOENT
+Error during discovery for server 'mcp-server-filesystem': spawn mcp-server-filesystem ENOENT
+MCP ERROR (wolfram-alpha): Error: spawn mcp-wolfram-alpha ENOENT
+Error during discovery for server 'wolfram-alpha': spawn mcp-wolfram-alpha ENOENT
+MCP ERROR (apify-content-crawler): Error: spawn npx_slow ENOENT
+Error during discovery for server 'apify-content-crawler': spawn npx_slow ENOENT
+MCP ERROR (atlassian_jira_official_remote): Error: spawn npx_disabled ENOENT
+Error during discovery for server 'atlassian_jira_official_remote': spawn npx_disabled ENOENT
+MCP ERROR (gemini-grounding): Error: spawn gemini-grounding ENOENT
+Error during discovery for server 'gemini-grounding': spawn gemini-grounding ENOENT
+MCP ERROR (asana_online_sometimes_hangs): Error: Error POSTing to endpoint (HTTP 401): {"error":"invalid_token","error_description":"Missing or invalid access token"}
+Error during discovery for server 'asana_online_sometimes_hangs': Error POSTing to endpoint (HTTP 401): {"error":"invalid_token","error_description":"Missing or invalid access token"}
+Error during discovery for server 'google_workspace_mcp': MCP error -32000: Connection closed
+Error during discovery for server 'neo4j-memory': MCP error -32000: Connection closed
+MCP ERROR (linkedin-mcp): Error: spawn linkedin-mcp_bad ENOENT
+Error during discovery for server 'linkedin-mcp': spawn linkedin-mcp_bad ENOENT
+MCP ERROR (empty): Error: spawn empty ENOENT
+Error during discovery for server 'empty': spawn empty ENOENT
+MCP ERROR (gemini_AI_bis-mcp): Error: spawn none ENOENT
+Error during discovery for server 'gemini_AI_bis-mcp': spawn none ENOENT
+MCP ERROR (browsermcp_online_bad): Error: spawn npx_bad ENOENT
+Error during discovery for server 'browsermcp_online_bad': spawn npx_bad ENOENT
+MCP ERROR (browsermcp_to_test_local_bad): Error: spawn mcp-server-browsermcp_bad ENOENT
+Error during discovery for server 'browsermcp_to_test_local_bad': spawn mcp-server-browsermcp_bad ENOENT
+MCP ERROR (sequential-thinking-experiment): Error: spawn mcp-server-sequential-thinking ENOENT
+Error during discovery for server 'sequential-thinking-experiment': spawn mcp-server-sequential-thinking ENOENT
+MCP ERROR (mcp-server-memory): Error: spawn mcp-server-memory ENOENT
+Error during discovery for server 'mcp-server-memory': spawn mcp-server-memory ENOENT
+MCP ERROR (puppeteer_online): Error: spawn npx_slow ENOENT
+Error during discovery for server 'puppeteer_online': spawn npx_slow ENOENT
+MCP ERROR (mcp-server-filesystem): Error: spawn mcp-server-filesystem ENOENT
+Error during discovery for server 'mcp-server-filesystem': spawn mcp-server-filesystem ENOENT
+MCP ERROR (wolfram-alpha): Error: spawn mcp-wolfram-alpha ENOENT
+Error during discovery for server 'wolfram-alpha': spawn mcp-wolfram-alpha ENOENT
+MCP ERROR (apify-content-crawler): Error: spawn npx_slow ENOENT                                                             Error during discovery for server 'apify-content-crawler': spawn npx_slow ENOENT
+MCP ERROR (atlassian_jira_official_remote): Error: spawn npx_disabled ENOENT
+Error during discovery for server 'atlassian_jira_official_remote': spawn npx_disabled ENOENT                               MCP ERROR (gemini-grounding): Error: spawn gemini-grounding ENOENT                                                          Error during discovery for server 'gemini-grounding': spawn gemini-grounding ENOENT
+MCP ERROR (asana_online_sometimes_hangs): Error: Error POSTing to endpoint (HTTP 401): {"error":"invalid_token","error_description":"Missing or invalid access token"}                    Error during discovery for server 'asana_online_sometimes_hangs': Error POSTing to endpoint (HTTP 401): {"error":"invalid_token","error_description":"Missing or invalid access token"}
+Error during discovery for server 'google_workspace_mcp': MCP error -32000: Connection closed                               Error during discovery for server 'neo4j-memory': MCP error -32000: Connection closed
