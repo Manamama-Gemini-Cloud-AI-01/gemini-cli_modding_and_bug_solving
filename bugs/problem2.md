@@ -21,4 +21,17 @@ This `gemini-cli` project is currently in a non-functional state on Termux due t
 
 2.  **Local Workaround**: The project contains an empty file at `scripts/install-ripgrep.js`. This is a deliberate, committed workaround intended to override and disable the dependency's broken `postinstall` script. While this prevents the installation from crashing, it also ensures that `ripgrep` is never actually installed.
 
-In summary, the project is caught between a broken dependency and a local patch that disables the broken part but doesn't replace it with a working solution.
+
+
+
+
+# Solution: 
+Solved by others elegantly, see: https://github.com/google-gemini/gemini-cli/issues/7895
+
+In short, even this is enough: 
+```
+rm -rf '/data/data/com.termux/files/usr/lib/node_modules/@google/gemini-cli'
+npm install -g @google/gemini-cli@preview --ignore-scripts --force
+```
+
+
