@@ -291,7 +291,7 @@ class EditToolInvocation implements ToolInvocation<EditToolParams, ToolResult> {
       params.new_string,
       initialError.raw,
       currentContent,
-      this.config.getGeminiClient(),
+      this.config.getBaseLlmClient(),
       abortSignal,
     );
 
